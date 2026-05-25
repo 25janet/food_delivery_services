@@ -36,7 +36,7 @@ def login():
             if check_password_hash(user['password'], data['password']):
                 token = jwt.encode({
                     'username': user['username'],
-                    'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1)
+                    'exp': datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=1)
                 }, app.config['SECRET_KEY'], algorithm='HS256')
 
                 return jsonify({
