@@ -2,6 +2,6 @@ FROM python:3.11-slim
 WORKDIR /app
 COPY requirement.txt .
 RUN pip install -r requirement.txt
-COPY ..
+COPY . .
 EXPOSE 5004
 CMD ["python","app/app.py","--host", "0.0.0.0","--port","5004"]
