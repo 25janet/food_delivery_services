@@ -1,0 +1,29 @@
+
+services:
+
+  auth_service:
+    build: ./services/auth_service
+    ports:
+      - "5001:5001"
+  
+  driver_service:
+    build: ./services/driver_service
+    ports:
+      - "5005:5005"
+  
+  order_service:
+    build: ./services/order_service
+    ports:
+      - "5003:5003"
+
+  payment_service:
+    build: ./services/payment_service
+    ports:
+      - "5004:5004"
+
+
+  user_service:
+    build: ./services/user_service
+    ports:
+      - "5002:5002"
+
