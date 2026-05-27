@@ -26,7 +26,7 @@ class Payment(db.Model):
 # PROCESS PAYMENT
 # -------------------------
 @app.route('/payments', methods=['POST'])
-@app.route('/payments', methods=['POST'])
+
 def process_payment():
 
     data = request.get_json()
