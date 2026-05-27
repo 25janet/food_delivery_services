@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
+import requests
 
 app = Flask(__name__)
 
@@ -29,26 +30,96 @@ class Order(db.Model):
 # -------------------------
 @app.route('/orders', methods=['POST'])
 def create_order():
+    import requests
+
+
+@app.route('/orders', methods=['POST'])
+def create_order():
+
     data = request.get_json()
 
+    # -------------------------
+    # 1. VALIDATE USER
+    # -------------------------
+    user_response = requests.get(
+        f'http://user_service:5002/users/{data["user_id"]}'
+    )
+
+    if user_response.status_code != 200:
+        return jsonify({
+            'message': 'User not found'
+        }), 404
+
+
+    # -------------------------
+    # 2. PROCESS PAYMENT
+    # -------------------------
+    payment_response = requests.post(
+        'http://payment_service:5004/payments',
+        json={
+            'order_id': 1,
+            'amount': data['amount']
+        }
+    )
+
+    if payment_response.status_code != 201:
+        return jsonify({
+            'message': 'Payment failed'
+        }), 400
+
+
+    # -------------------------
+    # 3. GET AVAILABLE DRIVER
+    # -------------------------
+    driver_response = requests.get(
+        'http://driver_service:5005/drivers/available'
+    )
+
+    if driver_response.status_code != 200:
+        return jsonify({
+            'message': 'No drivers available'
+        }), 400
+
+    driver_data = driver_response.json()
+
+    driver_id = driver_data['id']
+
+
+    # -------------------------
+    # 4. ASSIGN DRIVER
+    # -------------------------
+    assign_response = requests.put(
+        f'http://driver_service:5005/drivers/{driver_id}/assign'
+    )
+
+    if assign_response.status_code != 200:
+        return jsonify({
+            'message': 'Driver assignment failed'
+        }), 400
+
+
+    # -------------------------
+    # 5. CREATE ORDER
+    # -------------------------
     order = Order(
         user_id=data['user_id'],
         restaurant=data['restaurant'],
-        items=str(data['items']),  # simple storage for now
-        status='pending'
+        items=str(data['items']),
+        status='confirmed'
     )
 
     db.session.add(order)
     db.session.commit()
 
-    return jsonify({
-        'id': order.id,
-        'user_id': order.user_id,
-        'restaurant': order.restaurant,
-        'items': order.items,
-        'status': order.status
-    }), 201
 
+    # -------------------------
+    # FINAL RESPONSE
+    # -------------------------
+    return jsonify({
+        'message': 'Order created successfully',
+        'order_id': order.id,
+        'driver_id': driver_id
+    }), 201
 
 # -------------------------
 # GET ORDERS

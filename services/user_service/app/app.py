@@ -46,21 +46,21 @@ def create_user():
 # -------------------------
 # GET USERS
 # -------------------------
-@app.route('/users', methods=['GET'])
-def get_users():
-    users = User.query.all()
+@app.route('/users/<int:user_id>', methods=['GET'])
+def get_user(user_id):
 
-    result = []
+    user = User.query.get(user_id)
 
-    for u in users:
-        result.append({
-            'id': u.id,
-            'name': u.name,
-            'email': u.email
-        })
+    if not user:
+        return jsonify({
+            'message': 'User not found'
+        }), 404
 
-    return jsonify(result)
-
+    return jsonify({
+        'id': user.id,
+        'name': user.name,
+        'email': user.email
+    })
 
 # -------------------------
 # CREATE TABLES ON START

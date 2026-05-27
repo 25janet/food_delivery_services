@@ -27,6 +27,7 @@ class Driver(db.Model):
 # -------------------------
 @app.route('/drivers', methods=['POST'])
 def create_driver():
+
     data = request.get_json()
 
     driver = Driver(
@@ -47,10 +48,11 @@ def create_driver():
 
 
 # -------------------------
-# GET DRIVERS
+# GET ALL DRIVERS
 # -------------------------
 @app.route('/drivers', methods=['GET'])
 def get_drivers():
+
     drivers = Driver.query.all()
 
     result = []
@@ -64,6 +66,49 @@ def get_drivers():
         })
 
     return jsonify(result)
+
+
+# -------------------------
+# GET AVAILABLE DRIVER
+# -------------------------
+@app.route('/drivers/available', methods=['GET'])
+def get_available_driver():
+
+    driver = Driver.query.filter_by(status='available').first()
+
+    if not driver:
+        return jsonify({
+            'message': 'No available drivers'
+        }), 404
+
+    return jsonify({
+        'id': driver.id,
+        'name': driver.name,
+        'vehicle': driver.vehicle,
+        'status': driver.status
+    })
+
+
+# -------------------------
+# ASSIGN DRIVER
+# -------------------------
+@app.route('/drivers/<int:driver_id>/assign', methods=['PUT'])
+def assign_driver(driver_id):
+
+    driver = Driver.query.get(driver_id)
+
+    if not driver:
+        return jsonify({
+            'message': 'Driver not found'
+        }), 404
+
+    driver.status = 'busy'
+
+    db.session.commit()
+
+    return jsonify({
+        'message': 'Driver assigned successfully'
+    })
 
 
 # -------------------------
