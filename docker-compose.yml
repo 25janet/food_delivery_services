@@ -1,29 +1,51 @@
 
 services:
-
+  postgres:
+    image: postgres:12-alpine
+    container_name: postgres_db
+    environment:
+              POSTGRES_USER: admin
+              POSTGRES_PASSWORD: password
+              POSTGRES_DB: food_delivery
+    ports:
+    - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
   auth_service:
     build: ./services/auth_service
     ports:
       - "5001:5001"
+    depends_on:
+      - postgres
   
   driver_service:
     build: ./services/driver_service
     ports:
       - "5005:5005"
+    depends_on:
+      - postgres
   
   order_service:
     build: ./services/order_service
     ports:
       - "5003:5003"
+    depends_on:
+      - postgres
 
   payment_service:
     build: ./services/payment_service
     ports:
       - "5004:5004"
+    depends_on:
+      - postgres
 
 
   user_service:
     build: ./services/user_service
     ports:
       - "5002:5002"
+    depends_on:
+      - postgres
 
+volumes:
+  postgres_data:
